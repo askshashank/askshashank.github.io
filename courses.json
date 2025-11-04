@@ -1,0 +1,62 @@
+[
+  {
+    "id": "c1",
+    "title": "DSA",
+    "category": "programming",
+    "desc": "Data Structures & Algorithms — fundamentals, problems and solutions.",
+    "files": [
+      {"name":"DSA_Notes.pdf","url":"files/dsa_notes.pdf","size":"2.3 MB"},
+      {"name":"DSA_Problems.zip","url":"files/dsa_problems.zip","size":"6.8 MB"}
+    ]
+  },
+  {
+    "id": "c2",
+    "title": "OS",
+    "category": "programming",
+    "desc": "Operating Systems — processes, threads, memory and scheduling.",
+    "files": [
+      {"name":"OS_Concepts.pdf","url":"files/os_concepts.pdf","size":"3.0 MB"},
+      {"name":"OS_Exercises.zip","url":"files/os_exercises.zip","size":"4.2 MB"}
+    ]
+  },
+  {
+    "id": "c3",
+    "title": "JAVA",
+    "category": "programming",
+    "desc": "Java programming — core libraries, OOP and practical examples.",
+    "files": [
+      {"name":"Java_Guide.pdf","url":"files/java_guide.pdf","size":"2.7 MB"},
+      {"name":"Java_Projects.zip","url":"files/java_projects.zip","size":"9.4 MB"}
+    ]
+  },
+  {
+    "id": "c4",
+    "title": "UNIX",
+    "category": "languages",
+    "desc": "UNIX essentials — shell, commands, scripting and administration.",
+    "files": [
+      {"name":"Unix_CheatSheet.pdf","url":"files/unix_cheatsheet.pdf","size":"0.9 MB"},
+      {"name":"Unix_Scripts.zip","url":"files/unix_scripts.zip","size":"1.8 MB"}
+    ]
+  },
+  {
+    "id": "c5",
+    "title": "MATH",
+    "category": "math",
+    "desc": "Mathematics for CS — discrete math, calculus basics and practice.",
+    "files": [
+      {"name":"Math_Notes.pdf","url":"files/math_notes.pdf","size":"3.6 MB"},
+      {"name":"Math_Problems.zip","url":"files/math_problems.zip","size":"5.0 MB"}
+    ]
+  },
+  {
+    "id": "c6",
+    "title": "DDCO",
+    "category": "design",
+    "desc": "DDCO (Digital Design & Computer Organization) — digital logic and architecture.",
+    "files": [
+      {"name":"DDCO_Notes.pdf","url":"files/ddco_notes.pdf","size":"2.1 MB"},
+      {"name":"DDCO_Examples.zip","url":"files/ddco_examples.zip","size":"3.3 MB"}
+    ]
+  }
+]

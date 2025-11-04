@@ -17,6 +17,7 @@
       <input id="search" type="search" placeholder="Search courses, e.g. Python, Math..." />
     </div>
     <nav class="actions">
+      <button id="contribute-btn" title="Contribute">➕ Contribute</button>
       <button id="theme-toggle" title="Toggle theme">🌓</button>
     </nav>
   </header>
@@ -67,6 +68,33 @@
         </div>
       </div>
     </aside>
+
+    <!-- Contribute modal -->
+    <div id="contribute-modal" class="modal" aria-hidden="true">
+      <div class="modal-content">
+        <button id="close-contribute" class="close">✕</button>
+        <h3>Contribute a resource</h3>
+        <form id="contribute-form">
+          <label>
+            Course name
+            <input id="contrib-course" type="text" required placeholder="e.g. OS" />
+          </label>
+          <label>
+            File
+            <input id="contrib-file" type="file" required />
+          </label>
+          <label>
+            Description (optional)
+            <input id="contrib-desc" type="text" placeholder="Short description" />
+          </label>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button type="submit" class="primary">Share</button>
+            <button type="button" id="cancel-contribute">Cancel</button>
+          </div>
+        </form>
+        <small style="display:block;margin-top:8px;color:var(--muted)">Files are stored in your browser (IndexedDB) and available on this device/browser only. To share publicly you need a server or a pull request to the repo.</small>
+      </div>
+    </div>
   </main>
 
   <footer class="footer">

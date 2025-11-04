@@ -62,7 +62,56 @@ const courses = [
   }
 ];
 
+// --- IndexedDB helpers for storing uploaded community resources ---
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open('learnhub',1);
+    req.onupgradeneeded = (e)=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('uploads')){
+        db.createObjectStore('uploads',{keyPath:'id'});
+      }
+    };
+    req.onsuccess = (e)=> resolve(e.target.result);
+    req.onerror = (e)=> reject(e.target.error);
+  });
+}
+
+async function addUploadRecord(title, filename, blob, size){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction('uploads','readwrite');
+    const store = tx.objectStore('uploads');
+    const id = Date.now();
+    const rec = {id, title, filename, blob, size};
+    const req = store.add(rec);
+    req.onsuccess = ()=> resolve(rec);
+    req.onerror = (e)=> reject(e.target.error);
+  });
+}
+
+async function getAllUploadsFromDB(){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction('uploads','readonly');
+    const store = tx.objectStore('uploads');
+    const req = store.getAll();
+    req.onsuccess = ()=> resolve(req.result || []);
+    req.onerror = (e)=> reject(e.target.error);
+  });
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
+  // grab contribute modal elements
+  const contributeBtn = document.getElementById('contribute-btn');
+  const contributeModal = document.getElementById('contribute-modal');
+  const closeContribute = document.getElementById('close-contribute');
+  const cancelContribute = document.getElementById('cancel-contribute');
+  const contributeForm = document.getElementById('contribute-form');
+  const contribCourse = document.getElementById('contrib-course');
+  const contribFile = document.getElementById('contrib-file');
+  const contribDesc = document.getElementById('contrib-desc');
   const grid = document.getElementById("grid");
   const detail = document.getElementById("detail-pane");
   const detailTitle = document.getElementById("detail-title");
@@ -77,6 +126,32 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeCategory = "all";
 
   yearEl.textContent = new Date().getFullYear();
+
+  // load persisted uploads from IndexedDB and merge into courses list
+  (async function loadUploads(){
+    try{
+      const uploads = await getAllUploadsFromDB();
+      uploads.forEach(u => {
+        // create a course-like entry for each upload
+        const id = `u-${u.id}`;
+        const courseObj = {
+          id,
+          title: u.title,
+          category: 'community',
+          desc: u.desc || 'Shared by community',
+          files: [
+            {name: u.filename, url: URL.createObjectURL(u.blob), size: u.size}
+          ]
+        };
+        // add to courses so it shows up in lists
+        courses.push(courseObj);
+      });
+      // re-render after uploads loaded
+      filterAndRender();
+    }catch(err){
+      console.warn('Could not load uploads', err);
+    }
+  })();
 
   function renderGrid(list){
     grid.innerHTML = "";
@@ -110,6 +185,13 @@ document.addEventListener("DOMContentLoaded", () => {
     detailDesc.textContent = course.desc;
     fileList.innerHTML = "";
     course.files.forEach(f => {
+      // normalize URL: if it's an absolute http(s) URL or blob URL keep it,
+      // otherwise assume JSON uses `files/<name>` and map it to `/assets/courses/<course-folder>/<name>`
+      const courseFolder = course.title.toLowerCase().replace(/\s+/g, '_');
+      const url = (f.url && /^(?:https?:\/\/|\/|blob:)/.test(f.url))
+        ? f.url
+        : `/assets/courses/${courseFolder}/${f.url.replace(/^files\//,"")}`;
+
       const li = document.createElement("li");
       li.innerHTML = `
         <div style="display:flex;flex-direction:column">
@@ -117,16 +199,20 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="file-meta">${f.size}</span>
         </div>
         <div>
-          <a class="btn" href="${f.url}" download>Download</a>
+          <a class="btn" href="${url}" download>Download</a>
         </div>
       `;
       fileList.appendChild(li);
     });
     downloadAll.onclick = () => {
-      alert("Download All will download each file individually for now. To offer a single ZIP, upload a pre-generated zip in /files and update the link.");
+      // Download each file individually by creating temporary anchors.
+      const courseFolder = course.title.toLowerCase().replace(/\s+/g, '_');
       course.files.forEach(f => {
+          const url = (f.url && /^(?:https?:\/\/|\/|blob:)/.test(f.url))
+            ? f.url
+            : `/assets/courses/${courseFolder}/${f.url.replace(/^files\//,"")}`;
         const a = document.createElement("a");
-        a.href = f.url;
+        a.href = url;
         a.download = f.name;
         document.body.appendChild(a);
         a.click();
@@ -177,11 +263,15 @@ document.addEventListener("DOMContentLoaded", () => {
     quick.innerHTML = "";
     const files = [];
     list.forEach(c=>{
-      c.files.forEach(f=>files.push({...f, course:c.title}));
+      const folder = c.title.toLowerCase().replace(/\s+/g,'_');
+      c.files.forEach(f=>files.push({...f, course:c.title, folder}));
     });
     files.slice(0,5).forEach(f=>{
       const li = document.createElement("li");
-      li.innerHTML = `<a href="${f.url}" download style="color:inherit;text-decoration:none">${f.name} <span style="color:var(--muted)">— ${f.course}</span></a>`;
+      const url = (f.url && /^(?:https?:\/\/|\/|blob:)/.test(f.url))
+        ? f.url
+        : `/assets/courses/${f.folder}/${f.url.replace(/^files\//,"")}`;
+      li.innerHTML = `<a href="${url}" download style="color:inherit;text-decoration:none">${f.name} <span style="color:var(--muted)">— ${f.course}</span></a>`;
       quick.appendChild(li);
     });
     if(files.length === 0) quick.innerHTML = `<li style="color:var(--muted)">No downloads</li>`;

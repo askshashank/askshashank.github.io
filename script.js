@@ -280,6 +280,50 @@ document.addEventListener("DOMContentLoaded", () => {
   // initial render
   filterAndRender();
 
+  // --- Contribute modal behaviour ---
+  function openContribute(){
+    contributeModal.setAttribute('aria-hidden','false');
+    contributeModal.style.display = 'block';
+  }
+  function closeContributeModal(){
+    contributeModal.setAttribute('aria-hidden','true');
+    contributeModal.style.display = 'none';
+    contributeForm.reset();
+  }
+
+  contributeBtn.addEventListener('click', openContribute);
+  closeContribute.addEventListener('click', closeContributeModal);
+  cancelContribute.addEventListener('click', closeContributeModal);
+
+  contributeForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = contribCourse.value.trim();
+    const file = contribFile.files[0];
+    const desc = contribDesc.value.trim();
+    if(!title || !file) return alert('Please provide course name and a file');
+    // Save file into IndexedDB
+    try{
+      const sizeStr = `${(file.size/1024/1024).toFixed(1)} MB`;
+      const rec = await addUploadRecord(title, file.name, file, sizeStr);
+      // create course-like entry and add to UI
+      const id = `u-${rec.id}`;
+      const courseObj = {
+        id,
+        title,
+        category: 'community',
+        desc: desc || 'Shared by community',
+        files: [ { name: file.name, url: URL.createObjectURL(file), size: sizeStr } ]
+      };
+      courses.push(courseObj);
+      filterAndRender();
+      closeContributeModal();
+      alert('Thank you — resource saved locally and available in the dashboard.');
+    }catch(err){
+      console.error('Upload failed', err);
+      alert('Could not save file locally: ' + (err && err.message));
+    }
+  });
+
   // small theme toggle (dark/light)
   const themeToggle = document.getElementById("theme-toggle");
   themeToggle.addEventListener("click", () => {
